@@ -36,7 +36,6 @@ class Main:
             self.input_path = self.current_directory
 
     def commandLineHandler(self):
-
         # Parameters available: -i/--input <path>, -o/--output <path>, -d/--dryrun, -h/--help
 
         argv = sys.argv[1:]
