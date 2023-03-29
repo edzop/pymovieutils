@@ -64,16 +64,15 @@ class Main:
 
     def help(self):
 
-        print()
+        print("========================================================")
+        print("batch transcoder - https://github.com/edzop/pymovieutils")
+        print("========================================================")
+
         print("Available commands:")
         print("-i / --input <path>")
-        print()
         print("-o / --output <path>")
-        print()
         print("-d / --dryrun")
-        print()
         print("-h / --help")
-        print()
 
     def getVideos(self):
         if self.input_path == "":
