@@ -15,10 +15,8 @@ class Main:
         self.verbose=False
 
         self.dry_run = False
-        self.os_environment = platform.system()
+
         self.video_extensions = (".mp4", ".MP4", ".mov", ".MOV")
-        self.ffmpeg_binary = "/usr/bin/ffmpeg"
-        self.ffprobe_binary = "/usr/bin/ffprobe"
         self.ffmpeg_commands = []
         self.use_shell = False
         self.useprobe=True
@@ -29,6 +27,11 @@ class Main:
         self.total_output_video_size = 0
 
         self.failed_videos = []
+
+        self.os_environment = platform.system()
+
+        self.ffmpeg_binary = "/usr/bin/ffmpeg"
+        self.ffprobe_binary = "/usr/bin/ffprobe"
 
         if self.os_environment.lower() == "windows":
             self.ffmpeg_binary = "D:/ffmpeg/bin/ffmpeg.exe"
@@ -126,10 +129,20 @@ class Main:
 
         for index, video in enumerate(self.videos, start=1):
 
-            output_directory = self.output_path + os.path.sep
-            self.validate_output_path(output_directory)
+            input_path=os.path.dirname(video)
+            subpath=str(input_path).replace(self.input_path,"")
+            
+            output_path= self.output_path + subpath
+            self.validate_output_path(output_path)
 
-            output_file = output_directory + os.path.basename(video)
+            output_file = output_path + os.sep + os.path.basename(video)
+
+            if self.verbose:
+                print()
+                print("input_path: %s"%input_path)
+                print("output_path: %s"%output_path)
+                print("Output file: %s subpath: %s"%(output_file,subpath))
+                print()
 
             input_streams=[]
 
@@ -138,8 +151,10 @@ class Main:
 
             self.make_transcode_command(video, output_file, input_streams)
 
+            output_video_size=0
+            input_video_size = os.stat(video).st_size
 
-            print("(%s of %s): %s" % (index, len(self.videos),video))
+            print("Processing %s of %s: %s (%s)" % (index, len(self.videos),video,self.getHumanReadableFileSize(input_video_size)))
                 
             if self.verbose:
                 print("command: %s" % " ".join(self.ffmpeg_commands))
@@ -147,8 +162,6 @@ class Main:
                 #process = FfmpegProcess(self.ffmpeg_commands)
                 #process.run()
 
-            output_video_size=0
-            input_video_size = os.stat(video).st_size
 
             if self.dry_run == False:
                 if subprocess.run(self.ffmpeg_commands, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, shell=self.use_shell).returncode == 0:
@@ -167,13 +180,13 @@ class Main:
             if output_video_size>0:
                 compression_percent=output_video_size*100/input_video_size
 
-            print("Input: %s Output: %s (%0.2f%%) Progress: %s"%(self.getHumanReadableFileSize(input_video_size),
-                                                                       self.getHumanReadableFileSize(output_video_size),
-                                                                       compression_percent,
-                                                                       format_percent_progress))
-
-        print()
-        print("Processed videos can be found at %s" % self.output_path)
+            print("Output: %s"%output_file)
+            print("output size: %s compressed: %0.2f%% Progress: %s"%(
+                   
+                                                                        self.getHumanReadableFileSize(output_video_size),
+                                                                        compression_percent,
+                                                                        format_percent_progress))
+            
         print()
 
     def validate_output_path(self, video_dirname):
