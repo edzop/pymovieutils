@@ -154,6 +154,7 @@ class Main:
             output_video_size=0
             input_video_size = os.stat(video).st_size
 
+            print()
             print("Processing %s of %s: %s (%s)" % (index, len(self.videos),video,self.getHumanReadableFileSize(input_video_size)))
                 
             if self.verbose:
@@ -188,6 +189,15 @@ class Main:
                                                                         format_percent_progress))
             
         print()
+
+        total_compression_ratio=0
+
+        if self.total_output_video_size>0:
+            total_compression_ratio = self.total_output_video_size * 100 / self.total_input_video_size
+
+        print("Total Input %s -> Total Output %s (%0.2f%%)"%(self.getHumanReadableFileSize(self.total_input_video_size),
+                                                        self.getHumanReadableFileSize(self.total_output_video_size),
+                                                        total_compression_ratio))
 
     def validate_output_path(self, video_dirname):
         # Replace input path with output path.
