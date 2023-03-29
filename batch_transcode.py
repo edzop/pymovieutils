@@ -63,17 +63,16 @@ class Main:
             print("Use -h or --help for available commands.")
 
     def help(self):
+
         print()
         print("Available commands:")
-        print("-i / --input <directory or path>     Used with -o or --output command. Search video files in the given directory/path including sub-folders. E.g. python app.py -i D:/videos -o D:/videos/processed")
+        print("-i / --input <path>")
         print()
-        print("-o / --output <directory or path>    Used with -i or --input command. Destination folder/directory of processed video files. E.g. python app.py -i D:/videos -o D:/videos/processed")
+        print("-o / --output <path>")
         print()
-        print("-d / --dryrun                        Used with -i and -o. Shows the list of videos that would be processed with ffmpeg and simulate the processing of videos with calling ffmpeg. E.g. python app.py -i D:/videos -o D:/videos/processed -d")
+        print("-d / --dryrun")
         print()
-        print("-h / --help                          Print available commands. E.g. python app.py")
-        print("                                                                    python app.py -h")
-        print("                                                                    python app.py --help")
+        print("-h / --help")
         print()
 
     def getVideos(self):
