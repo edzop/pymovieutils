@@ -13,30 +13,27 @@ class Main:
 
         self.input_path = ""
         self.verbose=False
-        self.output_path = ""
+
         self.dry_run = False
         self.os_environment = platform.system()
         self.video_extensions = (".mp4", ".MP4", ".mov", ".MOV")
         self.ffmpeg_binary = "/usr/bin/ffmpeg"
+        self.ffprobe_binary = "/usr/bin/ffprobe"
         self.ffmpeg_commands = []
-        self.shell = False
-
-        self.use_current_dir = False
-        self.root_dir = "/home/user/Videos"
-        self.current_basename = os.path.basename(self.root_dir)
-        self.output_root = "/media/ek/2tb_m2/proxy_output"
+        self.use_shell = False
 
         self.videos = []
-        self.total_video_size = 0
+
+        self.total_input_video_size = 0
+        self.total_output_video_size = 0
+
         self.failed_videos = []
 
         if self.os_environment.lower() == "windows":
             self.ffmpeg_binary = "D:/ffmpeg/bin/ffmpeg.exe"
-            self.shell = True
+            self.ffprobe_binary = "D:/ffmpeg/bin/ffprobe.exe"
+            self.use_shell = True
         
-        elif self.os_environment.lower() == "linux":
-            self.use_current_dir = True
-            self.input_path = self.root_dir
 
     def commandLineHandler(self):
         # Parameters available: -i/--input <path>, -o/--output <path>, -v/--verbose, -d/--dryrun, -h/--help
@@ -83,124 +80,112 @@ class Main:
         print("-d / --dryrun")
         print("-h / --help")
 
+    # Return number of videos found
     def getVideos(self):
+
         if self.input_path == "":
-            print("No input path/directory found. Add input path/directory after -i/--input command. E.g. python app.py -i D:/videos -o D:/videos/processed")
+            print("No input path found.")
+            return 0
 
-        else:
-            self.total_video_size = 0
+        self.total_input_video_size = 0
 
-            for root, dirs, files in os.walk(self.input_path):
-                for file in files:
-                    if file.endswith(self.video_extensions):
-                        video_directory = os.path.join(root, file)
-                        self.videos.append(video_directory)
-                        self.total_video_size += os.stat(video_directory).st_size
+        for root, dirs, files in os.walk(self.input_path):
+            for file in files:
+                if file.endswith(self.video_extensions):
+                    video_directory = os.path.join(root, file)
+                    self.videos.append(video_directory)
+                    self.total_input_video_size += os.stat(video_directory).st_size
 
-            print("Total videos to process: %s" % len(self.videos))
-            print("Total video file size: %s MB" % "{:.2f}".format(self.total_video_size / (1024 * 1024)))
+        print("Total videos to process: %s" % len(self.videos))
+        print("Total video file size: %s" %self.getHumanReadableFileSize(self.total_input_video_size))
+        print()
+
+        print("Input path: %s"%self.input_path)
+        print("Output path: %s"%self.output_path)
+        print()
+
+        if self.verbose:
+            print()
+            print("The following videos will be processed.")
+            print(self.videos)
             print()
 
-            print("Input path: %s"%self.input_path)
-            print("Output path: %s"%self.output_path)
-            print()
-
-            if self.verbose:
-                print()
-                print("The following videos will be processed.")
-                print(self.videos)
-                print()
-
+        return len(self.videos)
+    
+    def getHumanReadableFileSize(self,size):
+        return "%0.2f MB" % (size / (1024 * 1024) )
 
     def processVideos(self):
 
-        if self.input_path == "":
-            print("No output path/directory found. Add output path/directory after -o/--output command. E.g. python app.py -i D:/videos -o D:/videos/processed")
+        total_processed_video_size = 0
 
-        else:
-            process_video_size = 0
+        for index, video in enumerate(self.videos, start=1):
 
-            for index, video in enumerate(self.videos, start=1):
-                if self.os_environment.lower() == "windows":
-                    self.make_ffmpeg_win_command(video)
+            output_directory = self.output_path + os.path.sep
+            self.validate_output_path(output_directory)
+
+            output_file = output_directory + os.path.basename(video)
+
+            input_streams = self.get_timecodestream(video)
+
+            self.make_transcode_command(video, output_file, input_streams)
+
+
+            print("(%s of %s): %s" % (index, len(self.videos),video))
+                
+            if self.verbose:
+                print("command: %s" % " ".join(self.ffmpeg_commands))
+
+                #process = FfmpegProcess(self.ffmpeg_commands)
+                #process.run()
+
+            output_video_size=0
+            input_video_size = os.stat(video).st_size
+
+            if self.dry_run == False:
+                if subprocess.run(self.ffmpeg_commands, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, shell=self.use_shell).returncode == 0:
+                    output_video_size = os.stat(output_file).st_size
+                    self.total_output_video_size += output_video_size        
                 else:
-                    output_directory = self.output_root + os.path.sep + self.current_basename + os.path.sep
-                    self.validate_output_path(output_directory)
-                    output_file = output_directory + os.path.basename(video)
+                    self.failed_videos.append(video)
+                    print("Failed to process %s" % video)
 
-                    #print("video: %s"%video)
+            total_processed_video_size += input_video_size
 
-                    input_streams = self.get_timecodestream(video)
+            percent_progress = total_processed_video_size / self.total_input_video_size * 100
+            format_percent_progress = "{:.2f}%".format(percent_progress)
 
-                    self.make_transcode_command(video, output_file, input_streams)
+            compression_percent=0
+            if output_video_size>0:
+                compression_percent=output_video_size*100/input_video_size
 
-                if self.dry_run == False:
-                    percent_progress = process_video_size / self.total_video_size * 100
-                    format_percent_progress = "{:.2f}%".format(percent_progress)
+            print("Input: %s Output: %s (%0.2f%%) Progress: %s"%(self.getHumanReadableFileSize(input_video_size),
+                                                                       self.getHumanReadableFileSize(output_video_size),
+                                                                       compression_percent,
+                                                                       format_percent_progress))
 
-                    print("Processing %s, (%s of %s) %s" % (video, index, len(self.videos), format_percent_progress))
-                    
-                    if self.verbose:
-                        print("command: %s" % " ".join(self.ffmpeg_commands))
-
-                    #process = FfmpegProcess(self.ffmpeg_commands)
-                    #process.run()
-
-                    if subprocess.run(self.ffmpeg_commands, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, shell=self.shell).returncode == 0:
-                        process_video_size += os.stat(video).st_size
-                    else:
-                        self.failed_videos.append(video)
-                        print("Failed to process %s" % video)
-
-                else:
-                    print("ffmpeg commands to execute for video %s" % video)
-                    print(" ".join(self.ffmpeg_commands))
-                    print()
-
-            print("Processed videos can be found at %s" % self.output_path)
-            print()
+        print()
+        print("Processed videos can be found at %s" % self.output_path)
+        print()
 
     def validate_output_path(self, video_dirname):
         # Replace input path with output path.
         new_output_path = str(video_dirname).replace(self.input_path, self.output_path)
         
-        # Create output path if not existing.
+        # Create output path if it doesn't exist
         if not os.path.exists(new_output_path):
+            if self.verbose:
+                print("Path: %s not found - creating"%new_output_path)
             os.makedirs(new_output_path)
         
         return new_output_path
     
-    def make_ffmpeg_win_command(self, video):
-        self.ffmpeg_commands = []
-        self.ffmpeg_commands.append(self.ffmpeg_binary)
-        self.ffmpeg_commands.append("-i")
-        self.ffmpeg_commands.append("%s" % video)
-        self.ffmpeg_commands.append("-c:v")
-        self.ffmpeg_commands.append("libx264")
-        self.ffmpeg_commands.append("-preset")
-        self.ffmpeg_commands.append("fast")
-        self.ffmpeg_commands.append("-crf")
-        self.ffmpeg_commands.append("22")
-        self.ffmpeg_commands.append("-s")
-        self.ffmpeg_commands.append("1280x720")
-        self.ffmpeg_commands.append("-c:a")
-        self.ffmpeg_commands.append("aac")
-        self.ffmpeg_commands.append("-b:a")
-        self.ffmpeg_commands.append("196k")
-        self.ffmpeg_commands.append("-ar")
-        self.ffmpeg_commands.append("44100")
-        self.ffmpeg_commands.append("-pix_fmt")
-        self.ffmpeg_commands.append("yuv420p")
-        self.ffmpeg_commands.append("%s/processed_%s" % (self.validate_output_path(os.path.dirname(video)), os.path.basename(video)))
-
-
-    # Probe metadata streams from source video file
-
+    # Probe metadata streams from source video file using ffprobe
     def get_timecodestream(self, input_file):
-        ffprobe_binary = "/usr/bin/ffprobe"
+
         ffprobe_commands = []
         
-        ffprobe_commands.append(ffprobe_binary)
+        ffprobe_commands.append(self.ffprobe_binary)
         
         ffprobe_commands.append("-v")
         ffprobe_commands.append("error")
@@ -226,7 +211,6 @@ class Main:
         for line in output.splitlines():
 
             result.append(int(line))
-            #result = int(output)
 
         if self.verbose:
             print("ffprobe data streams: %s"%result)
@@ -238,16 +222,16 @@ class Main:
 
         self.ffmpeg_commands.append(self.ffmpeg_binary)
         
-        self.ffmpeg_commands.append("-y") # overwrite if exist
+        # overwrite if exist
+        self.ffmpeg_commands.append("-y")
         
         self.ffmpeg_commands.append("-i")
         self.ffmpeg_commands.append(input_file)
         
         self.ffmpeg_commands.append("-pix_fmt")
+
         #self.ffmpeg_commands.append("yuv422p10le")
         self.ffmpeg_commands.append("yuv420p10le")
-
-        #yuv420p10le
         
         self.ffmpeg_commands.append("-c:v")
         self.ffmpeg_commands.append("libx265")
@@ -258,9 +242,6 @@ class Main:
         self.ffmpeg_commands.append("-vf")
         self.ffmpeg_commands.append("scale=960:-1")
 
-        #ffmpeg_commands.append("-map_metadata")
-        #ffmpeg_commands.append("0")
-        
         for stream in timecode_streams:
             self.ffmpeg_commands.append("-map_metadata")
             self.ffmpeg_commands.append("0:s:%d"%stream)
@@ -271,6 +252,8 @@ class Main:
         self.ffmpeg_commands.append(output_file)
         
 main = Main()
+
 main.commandLineHandler()
-main.getVideos()
-main.processVideos()
+
+if main.getVideos() > 0:
+    main.processVideos()
