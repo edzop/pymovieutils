@@ -8,7 +8,11 @@ from better_ffmpeg_progress import FfmpegProcess
 class Main:
 
     def __init__(self) -> None:
+
+        self.printIntro()
+
         self.input_path = ""
+        self.verbose=False
         self.output_path = ""
         self.dry_run = False
         self.os_environment = platform.system()
@@ -48,7 +52,10 @@ class Main:
             for opt, arg in opts:
                 if opt in ["-i", "--input"]:
                     self.input_path = arg
-                
+
+                elif opt in ["-v", "--verbose"]:
+                    self.verbose=True
+
                 elif opt in ["-o", "--output"]:
                     self.output_path = arg
 
@@ -62,11 +69,13 @@ class Main:
             print("ERROR: Main - commandLineHandler - %s" % (error))
             print("Use -h or --help for available commands.")
 
-    def help(self):
-
+    def printIntro(self):
         print("========================================================")
         print("batch transcoder - https://github.com/edzop/pymovieutils")
         print("========================================================")
+
+
+    def help(self):
 
         print("Available commands:")
         print("-i / --input <path>")
@@ -88,13 +97,20 @@ class Main:
                         self.videos.append(video_directory)
                         self.total_video_size += os.stat(video_directory).st_size
 
-            print()
-            print("The following videos will be processed.")
-            print(self.videos)
-            print()
             print("Total videos to process: %s" % len(self.videos))
             print("Total video file size: %s MB" % "{:.2f}".format(self.total_video_size / (1024 * 1024)))
             print()
+
+            print("Input path: %s"%self.input_path)
+            print("Output path: %s"%self.output_path)
+            print()
+
+            if self.verbose:
+                print()
+                print("The following videos will be processed.")
+                print(self.videos)
+                print()
+
 
     def processVideos(self):
 
@@ -112,7 +128,7 @@ class Main:
                     self.validate_output_path(output_directory)
                     output_file = output_directory + os.path.basename(video)
 
-                    print("video: %s"%video)
+                    #print("video: %s"%video)
 
                     input_streams = self.get_timecodestream(video)
 
@@ -123,14 +139,14 @@ class Main:
                     format_percent_progress = "{:.2f}%".format(percent_progress)
 
                     print("Processing %s, (%s of %s) %s" % (video, index, len(self.videos), format_percent_progress))
-                    print("with following commands: %s" % " ".join(self.ffmpeg_commands))
+                    
+                    if self.verbose:
+                        print("command: %s" % " ".join(self.ffmpeg_commands))
 
                     #process = FfmpegProcess(self.ffmpeg_commands)
                     #process.run()
 
                     if subprocess.run(self.ffmpeg_commands, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, shell=self.shell).returncode == 0:
-                        print("Successfully processed %s" % video)
-
                         process_video_size += os.stat(video).st_size
                     else:
                         self.failed_videos.append(video)
@@ -197,19 +213,21 @@ class Main:
         
         ffprobe_commands.append(input_file)
 
-        print(ffprobe_commands)
+        if self.verbose:
+            print(ffprobe_commands)
         
         output = subprocess.check_output(ffprobe_commands).decode(sys.stdout.encoding).strip()
-        
+
         result = []
         
         for line in output.splitlines():
-            print(line)
+
             result.append(int(line))
             #result = int(output)
-        
-        print(result)
-        
+
+        if self.verbose:
+            print("ffprobe data streams: %s"%result)
+
         return result
 
     def make_transcode_command(self, input_file, output_file, timecode_streams):
