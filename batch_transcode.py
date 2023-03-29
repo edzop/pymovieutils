@@ -193,6 +193,9 @@ class Main:
         self.ffmpeg_commands.append("yuv420p")
         self.ffmpeg_commands.append("%s/processed_%s" % (self.validate_output_path(os.path.dirname(video)), os.path.basename(video)))
 
+
+    # Probe metadata streams from source video file
+
     def get_timecodestream(self, input_file):
         ffprobe_binary = "/usr/bin/ffprobe"
         ffprobe_commands = []
