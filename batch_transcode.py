@@ -19,8 +19,7 @@ class Main:
 
         self.use_current_dir = False
         self.root_dir = "/home/user/Videos"
-        self.current_directory = os.getcwd()
-        self.current_basename = os.path.basename(self.current_directory)
+        self.current_basename = os.path.basename(self.root_dir)
         self.output_root = "/media/ek/2tb_m2/proxy_output"
 
         self.videos = []
@@ -33,7 +32,7 @@ class Main:
         
         elif self.os_environment.lower() == "linux":
             self.use_current_dir = True
-            self.input_path = self.current_directory
+            self.input_path = self.root_dir
 
     def commandLineHandler(self):
         # Parameters available: -i/--input <path>, -o/--output <path>, -d/--dryrun, -h/--help
@@ -78,7 +77,6 @@ class Main:
         print()
 
     def getVideos(self):
-
         if self.input_path == "":
             print("No input path/directory found. Add input path/directory after -i/--input command. E.g. python app.py -i D:/videos -o D:/videos/processed")
 
