@@ -21,6 +21,7 @@ class Main:
         self.ffprobe_binary = "/usr/bin/ffprobe"
         self.ffmpeg_commands = []
         self.use_shell = False
+        self.useprobe=True
 
         self.videos = []
 
@@ -41,7 +42,7 @@ class Main:
         argv = sys.argv[1:]
 
         try:
-            opts, args = getopt.getopt(argv, "i:o:vdh", ["input=", "output=", "verbose", "dryrun", "help"])
+            opts, args = getopt.getopt(argv, "i:o:vdh", ["input=", "output=", "verbose", "dryrun", "noprobe", "help"])
 
             if len(opts) == 0:
                 self.help()
@@ -58,6 +59,9 @@ class Main:
 
                 elif opt in ["-d", "--dryrun"]:
                     self.dry_run = True
+
+                elif opt in ["--noprobe"]:
+                    self.useprobe = False
 
                 elif opt in ["-h", "--help"]:
                     self.help()
@@ -79,6 +83,7 @@ class Main:
         print("-o / --output <path>")
         print("-d / --dryrun")
         print("-h / --help")
+        print("--noprobe\t\t Disable ffprobe metadata stream checking")
 
     # Return number of videos found
     def getVideos(self):
@@ -126,7 +131,10 @@ class Main:
 
             output_file = output_directory + os.path.basename(video)
 
-            input_streams = self.get_timecodestream(video)
+            input_streams=[]
+
+            if self.useprobe:
+                input_streams = self.get_timecodestream(video)
 
             self.make_transcode_command(video, output_file, input_streams)
 

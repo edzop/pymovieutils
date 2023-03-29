@@ -7,10 +7,11 @@ A utility to batch transcode video files.
 
 | Option | Description |
 | ----------- | ----------- |
-| -i  --input | Search video files in the given path including sub-folders. |
+| -i  --input | Recursively Search video files in the given path. |
 | -o --output | Destination path of processed video files. |  
 | -d --dryrun | Shows the list of videos that would be processed with ffmpeg and simulate the processing of videos |
 | -v --verbose | Verbose output (more debugging info) |
+| --noprobe | Disable ffprobe metadata stream checking |
 
 ## examples
 
