@@ -35,12 +35,12 @@ class Main:
             self.input_path = self.root_dir
 
     def commandLineHandler(self):
-        # Parameters available: -i/--input <path>, -o/--output <path>, -d/--dryrun, -h/--help
+        # Parameters available: -i/--input <path>, -o/--output <path>, -v/--verbose, -d/--dryrun, -h/--help
 
         argv = sys.argv[1:]
 
         try:
-            opts, args = getopt.getopt(argv, "i:o:dh", ["input=", "output=", "dryrun", "help"])
+            opts, args = getopt.getopt(argv, "i:o:vdh", ["input=", "output=", "verbose", "dryrun", "help"])
 
             if len(opts) == 0:
                 self.help()
@@ -113,8 +113,9 @@ class Main:
                     output_directory = self.output_root + os.path.sep + self.current_basename + os.path.sep
                     self.validate_output_path(output_directory)
                     output_file = output_directory + os.path.basename(video)
-                    input_file = self.current_directory + video
+
                     print("video: %s"%video)
+
                     input_streams = self.get_timecodestream(video)
 
                     self.make_transcode_command(video, output_file, input_streams)
