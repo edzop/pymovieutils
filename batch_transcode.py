@@ -101,8 +101,8 @@ class Main:
     def getVideos(self):
 
         if self.input_path == "":
-            print("No input path found.")
-            return 0
+            # use current directory if no input path specified
+            self.input_path = os.getcwd().rstrip(os.sep)
 
         self.total_input_video_size = 0
 
