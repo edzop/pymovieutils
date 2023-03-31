@@ -7,7 +7,7 @@ A utility to batch transcode video files.
 
 | Option | Description |
 | ----------- | ----------- |
-| -i  --input | Recursively Search video files in the given path. |
+| -i  --input | Recursively Search video files in the given path. If input path is ommited - current path is used. |
 | -o --output | Destination path of processed video files. |
 | -b | add base path |
 | -d --dryrun | Shows the list of videos that would be processed with ffmpeg and simulate the processing of videos |
