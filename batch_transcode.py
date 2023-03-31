@@ -21,6 +21,8 @@ class Main:
         self.use_shell = False
         self.useprobe=True
 
+        self.addbasepath=False
+
         self.videos = []
 
         self.total_input_video_size = 0
@@ -29,6 +31,7 @@ class Main:
         self.failed_videos = []
 
         self.os_environment = platform.system()
+
 
         self.ffmpeg_binary = "/usr/bin/ffmpeg"
         self.ffprobe_binary = "/usr/bin/ffprobe"
@@ -45,20 +48,25 @@ class Main:
         argv = sys.argv[1:]
 
         try:
-            opts, args = getopt.getopt(argv, "i:o:vdh", ["input=", "output=", "verbose", "dryrun", "noprobe", "help"])
+            opts, args = getopt.getopt(argv, "i:o:vbdh", ["input=", "output=", "verbose", "dryrun", "noprobe", "help"])
 
             if len(opts) == 0:
                 self.help()
 
             for opt, arg in opts:
                 if opt in ["-i", "--input"]:
-                    self.input_path = arg
+                    # strip trailing slash if it exists
+                    self.input_path = arg.rstrip(os.sep)
 
                 elif opt in ["-v", "--verbose"]:
                     self.verbose=True
 
+                elif opt in ["-b"]:
+                    self.addbasepath=True
+
                 elif opt in ["-o", "--output"]:
-                    self.output_path = arg
+                    # strip trailing shash if it exists
+                    self.output_path = arg.rstrip(os.sep)
 
                 elif opt in ["-d", "--dryrun"]:
                     self.dry_run = True
@@ -85,6 +93,7 @@ class Main:
         print("-i / --input <path>")
         print("-o / --output <path>")
         print("-d / --dryrun")
+        print("-b / --add base path")
         print("-h / --help")
         print("--noprobe\t\t Disable ffprobe metadata stream checking")
 
@@ -127,19 +136,31 @@ class Main:
 
         total_processed_video_size = 0
 
+        input_base_path=os.path.basename(self.input_path)
+
         for index, video in enumerate(self.videos, start=1):
 
-            input_path=os.path.dirname(video)
-            subpath=str(input_path).replace(self.input_path,"")
+            video_input_path=os.path.dirname(video)
+
+            subpath=str(video_input_path).replace(self.input_path,"")
             
-            output_path= self.output_path + subpath
+            output_path=self.output_path + subpath
+
+            if self.addbasepath:
+                output_path=self.output_path + os.sep + input_base_path + subpath
+            else:
+                output_path=self.output_path + os.sep + subpath
+
+
             self.validate_output_path(output_path)
 
             output_file = output_path + os.sep + os.path.basename(video)
 
             if self.verbose:
                 print()
-                print("input_path: %s"%input_path)
+                print("input_path: %s"%self.input_path)
+                print("video_input_path: %s"%video_input_path)
+                print("input_base_path: %s"%input_base_path)
                 print("output_path: %s"%output_path)
                 print("Output file: %s subpath: %s"%(output_file,subpath))
                 print()

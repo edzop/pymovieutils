@@ -8,7 +8,8 @@ A utility to batch transcode video files.
 | Option | Description |
 | ----------- | ----------- |
 | -i  --input | Recursively Search video files in the given path. |
-| -o --output | Destination path of processed video files. |  
+| -o --output | Destination path of processed video files. |
+| -b | add base path |
 | -d --dryrun | Shows the list of videos that would be processed with ffmpeg and simulate the processing of videos |
 | -v --verbose | Verbose output (more debugging info) |
 | --noprobe | Disable ffprobe metadata stream checking |
@@ -22,6 +23,30 @@ Linux Example:
 Windows Example:
 
 `python batch_transcode.py -i D:/videos -o D:/videos/processed`
+
+
+### base path option
+
+Given parameters: `-b -i /input/test -o /output`
+
+The result would be:
+
+| input | output |
+| ----------- | ----------- |
+| `/input/test/1.mp4` | `/output/test/1.mp4` |
+| `/input/test/sub1/2.mp4` | `/output/test/sub1/2.mp4` |
+| `/input/test/sub2/3.mp4` | `/output/test/sub2/3.mp4` |
+
+Note how `/test` is automatically added to the `/output` path because of the `-b` option. 
+
+Without the `-b` option the parameters `-i /input/test -o /output` would yeild:
+
+| input | output |
+| ----------- | ----------- |
+| `/input/test/1.mp4` | `/output/1.mp4` |
+| `/input/test/sub1/2.mp4` | `/output/sub1/2.mp4` |
+| `/input/test/sub2/3.mp4` | `/output/sub2/3.mp4` |
+
 
 ## Timecode
 
