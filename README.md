@@ -24,6 +24,18 @@ Test [312.9 MiB]
 └── L5 [0.0 B]
 ```
 
+A single integer can be added to command line to determine depth of tree displayed. Note this is only for display output - maximum directory depth is evaluated for calculating file sizes. 
+ 
+`python3 treesize.py 1`
+```bash
+ Test [312.9 MiB]
+├── L1 [234.7 MiB]
+├── L2 [26.1 MiB]
+├── L3 [26.1 MiB]
+├── L4 [0.0 B]
+└── L5 [0.0 B]
+```
+
 ## batch_transcode.py
 A utility to batch transcode video files. 
 
