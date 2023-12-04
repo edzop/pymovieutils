@@ -2,6 +2,28 @@
 
 Python tools for movie creation. 
 
+## treesize.py
+A python utility file to display a directory tree and combined file sizes for contents in a hierarchal fashion.
+
+### example
+`python3 treesize.py`
+
+would yield:
+
+`Test [312.9 MiB]`
+`├── L1 [234.7 MiB`
+`│   ├── L1_1 [182.6 MiB]`
+│   │   ├── L1_1_1 [52.2 MiB]
+│   │   └── L1_1_2 [104.3 MiB]
+│   │       └── L1_1_2_1 [52.2 MiB]
+│   ├── L1_2 [26.1 MiB]
+│   └── L1_3 [0.0 B]
+├── L2 [26.1 MiB]
+├── L3 [26.1 MiB]
+├── L4 [0.0 B]
+└── L5 [0.0 B]
+
+
 ## batch_transcode.py
 A utility to batch transcode video files. 
 
@@ -14,7 +36,7 @@ A utility to batch transcode video files.
 | -v --verbose | Verbose output (more debugging info) |
 | --noprobe | Disable ffprobe metadata stream checking |
 
-## examples
+### examples
 
 Linux Example:
 
