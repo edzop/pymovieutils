@@ -5,6 +5,10 @@ Python tools for movie creation.
 ## treesize.py
 A python utility file to display a directory tree and combined file sizes for contents in a hierarchal fashion.
 
+I tried really hard to find a way to determine the total file size recursively using the `tree` command and limit directory depth but if you limit the directory depth with the `tree` command it does not include the undisplayed directories in the total file sizes. 
+
+I would like to add additional metrics to include length (in minutes) of video files included to determine and summarize how complex a video project is.
+
 ### example
 `python3 treesize.py`
 
@@ -24,8 +28,8 @@ Test [312.9 MiB]
 └── L5 [0.0 B]
 ```
 
-A single integer can be added to command line to determine depth of tree displayed. Note this is only for display output - maximum directory depth is evaluated for calculating file sizes. 
- 
+A single integer can be added to command line to determine depth of tree displayed. Note this is only for display output - maximum directory depth is evaluated for calculating file sizes.
+
 `python3 treesize.py 1`
 ```bash
  Test [312.9 MiB]
