@@ -9,10 +9,10 @@ A python utility file to display a directory tree and combined file sizes for co
 `python3 treesize.py`
 
 would yield:
-
-`Test [312.9 MiB]`
-`├── L1 [234.7 MiB`
-`│   ├── L1_1 [182.6 MiB]`
+```bash
+Test [312.9 MiB]
+├── L1 [234.7 MiB
+│   ├── L1_1 [182.6 MiB]
 │   │   ├── L1_1_1 [52.2 MiB]
 │   │   └── L1_1_2 [104.3 MiB]
 │   │       └── L1_1_2_1 [52.2 MiB]
@@ -22,7 +22,7 @@ would yield:
 ├── L3 [26.1 MiB]
 ├── L4 [0.0 B]
 └── L5 [0.0 B]
-
+```
 
 ## batch_transcode.py
 A utility to batch transcode video files. 
