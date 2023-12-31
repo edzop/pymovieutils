@@ -7,30 +7,27 @@ A python utility file to display a directory tree and combined file sizes for co
 
 I tried really hard to find a way to determine the total file size recursively using the `tree` command and limit directory depth but if you limit the directory depth with the `tree` command it does not include the undisplayed directories in the total file sizes. 
 
-I would like to add additional metrics to include length (in minutes) of video files included to determine and summarize how complex a video project is.
+~~I would like to add additional metrics to include length (in minutes) of video files included to determine and summarize how complex a video project is.~~
+
+Metrics have been added to recursively display video length and video file count.
 
 ### example
 `python3 treesize.py`
 
 would yield:
 ```bash
-Test [312.9 MiB]
-├── L1 [234.7 MiB
-│   ├── L1_1 [182.6 MiB]
-│   │   ├── L1_1_1 [52.2 MiB]
-│   │   └── L1_1_2 [104.3 MiB]
-│   │       └── L1_1_2_1 [52.2 MiB]
-│   ├── L1_2 [26.1 MiB]
-│   └── L1_3 [0.0 B]
-├── L2 [26.1 MiB]
-├── L3 [26.1 MiB]
-├── L4 [0.0 B]
-└── L5 [0.0 B]
+ video_cloned_tree_test [Size: 143.7 MiB Length: 0:02:53 Count: 12]
+├── A1 [Size: 23.0 MiB Length: 0:00:27 Count: 2]
+│   └── A2 [Size: 11.5 MiB Length: 0:00:13 Count: 1]
+├── A2 [Size: 46.0 MiB Length: 0:00:55 Count: 4]
+│   └── A2 [Size: 23.0 MiB Length: 0:00:27 Count: 2]
+└── B [Size: 38.2 MiB Length: 0:00:44 Count: 3]
+    └── Br [Size: 11.5 MiB Length: 0:00:13 Count: 1]
 ```
 
-A single integer can be added to command line to determine depth of tree displayed. Note this is only for display output - maximum directory depth is evaluated for calculating file sizes.
+The `depth=` command line parameter can be added to command line to determine depth of tree displayed. Note this is only for display output - maximum directory depth is evaluated for calculating total file sizes.
 
-`python3 treesize.py 1`
+`python3 treesize.py --depth=1`
 ```bash
  Test [312.9 MiB]
 ├── L1 [234.7 MiB]
@@ -86,7 +83,7 @@ Without the `-b` option the parameters `-i /input/test -o /output` would yeild:
 | `/input/test/sub2/3.mp4` | `/output/sub2/3.mp4` |
 
 
-## Timecode
+### Timecode
 
 Not all cameras have the same metadata streams and we need to instruct ffmpeg which streams to copy. 
 
