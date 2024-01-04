@@ -112,7 +112,9 @@ class ffprobe_helper:
         ffmpeg_commands.append("profile=main10")
 
         ffmpeg_commands.append("-vf")
-        ffmpeg_commands.append("scale=960:-1")
+        ffmpeg_commands.append("scale=1034:-1")
+
+        # See proxy_resolution_calculator.ods for logic behind this number
 
         for stream in timecode_streams:
             ffmpeg_commands.append("-map_metadata")
