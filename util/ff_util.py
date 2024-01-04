@@ -128,14 +128,24 @@ class ffprobe_helper:
         if self.verbose:
             print("command: %s" % " ".join(ffmpeg_commands))
 
-        output = subprocess.check_output(ffmpeg_commands)
-        print(output)
-        return_code = subprocess.run(ffmpeg_commands, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, shell=self.use_shell).returncode
 
-        if return_code == 0:
+        #return_code,output = subprocess.check_output(ffmpeg_commands)
+        #print(output)
+            
+        completed_process = subprocess.run(ffmpeg_commands, 
+                                           text=True,
+                                           capture_output = True, 
+                                           shell=self.use_shell)
+
+        if self.verbose:
+            print(completed_process.stdout)
+            print(completed_process.stderr)
+
+
+        if completed_process.returncode == 0:
             return True
         else:
-            print("error code: %d (Failed to process %s)" %(return_code,input_file))
+            print("error code: %d (Failed to process %s)" %(completed_process.returncode,input_file))
             return False
 
 
