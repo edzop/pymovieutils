@@ -6,13 +6,16 @@ import subprocess
 from util import ff_util
 from util import helper
 
+
 class Main:
 
     def __init__(self) -> None:
 
         self.printIntro()
 
-        self.input_path = ""
+        self.input_path = None
+        self.output_path = None
+
         self.verbose=False
 
         self.dry_run = False
@@ -48,6 +51,7 @@ class Main:
 
                 elif opt in ["-v", "--verbose"]:
                     self.verbose=True
+                    print("Verbose mode")
 
                 elif opt in ["-b"]:
                     self.addbasepath=True
@@ -83,6 +87,7 @@ class Main:
         print("-d / --dryrun")
         print("-b / --add base path")
         print("-h / --help")
+        print("-v / --verbose")
         print("--noprobe\t\t Disable ffprobe metadata stream checking")
 
     # Return number of videos found
@@ -153,30 +158,32 @@ class Main:
 
             input_streams=[]
 
-            if self.useprobe:
-                input_streams = self.get_timecodestream(video)
+            ffhelper = ff_util.ffprobe_helper(self.verbose)
 
-            self.make_transcode_command(video, output_file, input_streams)
+            if self.useprobe:
+                
+                input_streams = ffhelper.get_timecodestream(video)
 
             output_video_size=0
             input_video_size = os.stat(video).st_size
 
             print()
-            print("Processing %s of %s: %s (%s)" % (index, len(self.videos),video,self.getHumanReadableFileSize(input_video_size)))
+
+            print("Processing %s of %s: %s (%s)" % 
+                (index, 
+                len(self.videos),
+                video,
+                helper.getHumanReadableFileSize(input_video_size)))
                 
 
-                #process = FfmpegProcess(self.ffmpeg_commands)
-                #process.run()
-
-
             if self.dry_run == False:
-                if subprocess.run(self.ffmpeg_commands, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, shell=self.use_shell).returncode == 0:
+                if ffhelper.ffmpeg_encode(video, output_file, input_streams):
                     output_video_size = os.stat(output_file).st_size
-                    self.total_output_video_size += output_video_size        
+                    self.total_output_video_size += output_video_size  
                 else:
-                    self.failed_videos.append(video)
-                    print("Failed to process %s" % video)
+                    self.failed_videos.append(video)      
 
+                
             total_processed_video_size += input_video_size
 
             percent_progress = total_processed_video_size / self.total_input_video_size * 100
@@ -186,10 +193,10 @@ class Main:
             if output_video_size>0:
                 compression_percent=output_video_size*100/input_video_size
 
-            print("Output: %s"%output_file)
-            print("output size: %s compressed: %0.2f%% Progress: %s"%(
+            print("Output: %s"%output_file,end=' ')
+            print("(%s - %0.2f%%) Progress: %s"%(
                    
-                                                                        self.getHumanReadableFileSize(output_video_size),
+                                                                        helper.getHumanReadableFileSize(output_video_size),
                                                                         compression_percent,
                                                                         format_percent_progress))
         print()
@@ -199,9 +206,11 @@ class Main:
         if self.total_output_video_size>0:
             total_compression_ratio = self.total_output_video_size * 100 / self.total_input_video_size
 
-        print("Total Input %s -> Total Output %s (%0.2f%%)"%(self.getHumanReadableFileSize(self.total_input_video_size),
-                                                        self.getHumanReadableFileSize(self.total_output_video_size),
-                                                        total_compression_ratio))
+        print("Total Input %s -> Total Output %s (%0.2f%%) failed: %d"%(
+            helper.getHumanReadableFileSize(self.total_input_video_size),
+            helper.getHumanReadableFileSize(self.total_output_video_size),
+            total_compression_ratio,
+            len(self.failed_videos)))
 
     def validate_output_path(self, video_dirname):
         # Replace input path with output path.
@@ -219,6 +228,9 @@ class Main:
 main = Main()
 
 main.commandLineHandler()
+
+if main.input_path is None or main.output_path is None:
+    exit()
 
 if main.getVideos() > 0:
     main.processVideos()

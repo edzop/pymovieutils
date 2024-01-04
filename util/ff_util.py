@@ -38,10 +38,6 @@ class ffprobe_helper:
 
         ffprobe_commands.append(input_file)
 
-        #result = subprocess.run(['ffprobe', '-v', 'error',
-        # '-show_entries', 'format=duration', 
-        # '-of', 'default=noprint_wrappers=1:nokey=1', input_video], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        
         if self.verbose:
             print(ffprobe_commands)
         
@@ -93,7 +89,7 @@ class ffprobe_helper:
 
         return result
     
-    def make_transcode_command(self, input_file, output_file, timecode_streams):
+    def ffmpeg_encode(self, input_file, output_file, timecode_streams):
         ffmpeg_commands = []
 
         ffmpeg_commands.append(self.ffmpeg_binary)
@@ -129,6 +125,17 @@ class ffprobe_helper:
     
         if self.verbose:
             print("command: %s" % " ".join(ffmpeg_commands))
+
+        output = subprocess.check_output(ffmpeg_commands)
+        print(output)
+        return_code = subprocess.run(ffmpeg_commands, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, shell=self.use_shell).returncode
+
+        if return_code == 0:
+            return True
+        else:
+            print("error code: %d (Failed to process %s)" %(return_code,input_file))
+            return False
+
 
 
 
