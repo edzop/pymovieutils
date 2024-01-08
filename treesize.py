@@ -80,7 +80,7 @@ class MyPath:
 
             video_duration = 0
 
-            if file.suffix in video_extensions:
+            if file.suffix.lower() in video_extensions:
                 ffprobe = ff_util.ffprobe_helper(self.verbose)
                 video_duration = ffprobe.get_video_duration(file)
                 self.children_total_filesize+=filesize
