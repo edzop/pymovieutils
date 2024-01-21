@@ -112,7 +112,7 @@ class ffprobe_helper:
         ffmpeg_commands.append("profile=main10")
 
         ffmpeg_commands.append("-vf")
-        ffmpeg_commands.append("scale=1034:-1")
+        ffmpeg_commands.append("scale=1034:-2")
 
         # See proxy_resolution_calculator.ods for logic behind this number
 
