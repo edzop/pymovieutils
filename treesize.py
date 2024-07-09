@@ -8,10 +8,12 @@ import getopt
 from util import helper
 from util import ff_util
 
-video_extensions = [ ".mov", ".avi", ".mp4" "*.wav" ]
+
 
 
 class MyPath:
+
+    video_extensions = [ ".mov", ".avi", ".mp4", ".wav" ]
 
     verbose=False
 
@@ -21,6 +23,7 @@ class MyPath:
     tree_parent_prefix_last = '│   '
 
     max_display_depth=99
+
 
     def __init__(self,path=None,parent=None,depth=0):
 
@@ -80,7 +83,7 @@ class MyPath:
 
             video_duration = 0
 
-            if file.suffix.lower() in video_extensions:
+            if file.suffix.lower() in self.video_extensions:
                 ffprobe = ff_util.ffprobe_helper(self.verbose)
                 video_duration = ffprobe.get_video_duration(file)
                 self.children_total_filesize+=filesize
@@ -174,6 +177,7 @@ class MyPath:
         print("Available commands:")
         print("-i / --input <path>")
         print("-o / --output <path>")
+        print("-v / --verbose")
 
 
     def printIntro(self):
@@ -203,6 +207,9 @@ class MyPath:
 
                 elif opt in ["-v", "--verbose"]:
                     self.verbose=True
+
+                elif opt in ["-h", "--help"]:
+                    self.help()
 
                 elif opt in ["--noprobe"]:
                     self.useprobe = False
