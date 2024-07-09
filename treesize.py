@@ -8,7 +8,7 @@ import getopt
 from util import helper
 from util import ff_util
 
-video_extensions = [ ".mov", ".avi", ".mp4" ]
+video_extensions = [ ".mov", ".avi", ".mp4" "*.wav" ]
 
 
 class MyPath:
