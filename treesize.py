@@ -13,7 +13,7 @@ from util import ff_util
 
 class MyPath:
 
-    video_extensions = [ ".mov", ".avi", ".mp4", ".wav" ]
+    video_extensions = [ ".mov", ".avi", ".mp4", ".wav", ".insv" ]
 
     verbose=False
 
